@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono, JetBrains_Mono } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
+import { TRPCReactProvider } from "@/lib/trpc/client";
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
@@ -43,7 +44,9 @@ export default function RootLayout({
             leaderboard
           </Link>
         </nav>
-        <main className="mx-auto max-w-[1440px] px-10">{children}</main>
+        <main className="mx-auto max-w-[1440px] px-10">
+          <TRPCReactProvider>{children}</TRPCReactProvider>
+        </main>
       </body>
     </html>
   );
