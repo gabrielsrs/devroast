@@ -119,6 +119,7 @@ export default function LeaderboardPage() {
             <CodeBlock
               code={entry.code}
               showLineNumbers={true}
+              showHeader={false}
               className="rounded-none border-none"
             />
           </div>

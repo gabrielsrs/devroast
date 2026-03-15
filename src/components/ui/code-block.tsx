@@ -6,6 +6,7 @@ interface CodeBlockProps {
   className?: string;
   showLineNumbers?: boolean;
   fileName?: string;
+  showHeader?: boolean;
 }
 
 let highlighterInstance: ReturnType<typeof createHighlighter> | null = null;
@@ -55,6 +56,31 @@ function detectLanguage(code: string): string {
   return "javascript";
 }
 
+function CodeBlockHeader({
+  fileName,
+  lang,
+}: {
+  fileName?: string;
+  lang: string;
+}) {
+  return (
+    <div className="flex items-center gap-3 border-b border-border px-4 py-2.5">
+      <span className="h-[10px] w-[10px] rounded-full bg-[#EF4444]" />
+      <span className="h-[10px] w-[10px] rounded-full bg-[#F59E0B]" />
+      <span className="h-[10px] w-[10px] rounded-full bg-[#10B981]" />
+      <div className="flex-1" />
+      {fileName && (
+        <span className="text-[12px] text-text-tertiary">{fileName}</span>
+      )}
+      {!fileName && (
+        <span className="text-[12px] text-text-tertiary">{lang}</span>
+      )}
+    </div>
+  );
+}
+
+export { CodeBlockHeader };
+
 function processHtml(html: string): string {
   return html
     .replace(/^<pre[^>]*>/, "")
@@ -68,6 +94,7 @@ export async function CodeBlock({
   className,
   showLineNumbers = true,
   fileName,
+  showHeader = true,
 }: CodeBlockProps) {
   const highlighter = await getHighlighter();
   const lang = detectLanguage(code);
@@ -87,18 +114,7 @@ export async function CodeBlock({
         className,
       )}
     >
-      <div className="flex items-center gap-3 border-b border-border px-4 py-2.5">
-        <span className="h-[10px] w-[10px] rounded-full bg-[#EF4444]" />
-        <span className="h-[10px] w-[10px] rounded-full bg-[#F59E0B]" />
-        <span className="h-[10px] w-[10px] rounded-full bg-[#10B981]" />
-        <div className="flex-1" />
-        {fileName && (
-          <span className="text-[12px] text-text-tertiary">{fileName}</span>
-        )}
-        {!fileName && (
-          <span className="text-[12px] text-text-tertiary">{lang}</span>
-        )}
-      </div>
+      {showHeader && <CodeBlockHeader fileName={fileName} lang={lang} />}
       <div className="flex">
         {showLineNumbers && (
           <div className="flex flex-col border-r border-border bg-bg-surface py-3 pl-3 pr-[10px] text-right">
