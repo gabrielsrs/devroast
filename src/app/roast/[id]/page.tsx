@@ -79,24 +79,7 @@ export default async function RoastResultPage({
   return (
     <div className="flex w-full flex-col gap-10 pb-16 pt-10">
       <div className="flex flex-col gap-12 px-20">
-        <div className="flex items-center justify-between border-b border-border pb-8">
-          <div className="flex items-center gap-3">
-            <span className="font-jetbrains text-[20px] font-[700] text-accent-green">
-              {">"}
-            </span>
-            <span className="font-jetbrains text-[18px] font-[500] text-text-primary">
-              devroast
-            </span>
-          </div>
-          <a
-            href="/leaderboard"
-            className="font-jetbrains text-[13px] text-text-secondary hover:text-text-primary"
-          >
-            leaderboard
-          </a>
-        </div>
-
-        <div className="flex flex-col items-center gap-16">
+        <div className="flex items-start gap-12">
           <div className="flex flex-col items-center gap-4">
             <div className="relative flex h-[180px] w-[180px] items-center justify-center">
               <div className="absolute h-[180px] w-[180px] rounded-full border-4 border-border" />
@@ -118,14 +101,14 @@ export default async function RoastResultPage({
             </span>
           </div>
 
-          <div className="flex flex-col items-center gap-4">
+          <div className="flex flex-col items-start gap-4">
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-accent-red" />
               <span className="font-jetbrains text-[13px] font-[500] text-accent-red">
                 verdict: {data.verdict}
               </span>
             </div>
-            <h1 className="max-w-[600px] text-center font-ibm-plex-mono text-[20px] leading-[1.5] text-text-primary">
+            <h1 className="max-w-[600px] font-ibm-plex-mono text-[20px] leading-[1.5] text-text-primary">
               {data.roastTitle}
             </h1>
             <div className="flex items-center gap-4">
