@@ -1,4 +1,5 @@
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
+import { z } from "zod";
 import { db } from "@/db";
 import { roasts, submissions } from "@/db/schema";
 import { baseProcedure, router } from "@/lib/trpc/init";
@@ -65,4 +66,38 @@ export const metricsRouter = router({
       lineCount: row.code.split("\n").length,
     }));
   }),
+
+  getRoastById: baseProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ input }) => {
+      const result = await db
+        .select({
+          id: roasts.id,
+          score: roasts.score,
+          roastContent: roasts.roastContent,
+          roastMode: roasts.roastMode,
+          createdAt: roasts.createdAt,
+          code: submissions.code,
+          language: submissions.language,
+        })
+        .from(roasts)
+        .innerJoin(submissions, sql`${roasts.submissionId} = ${submissions.id}`)
+        .where(eq(roasts.id, input.id))
+        .limit(1);
+
+      if (result.length === 0) {
+        throw new Error("Roast not found");
+      }
+
+      const row = result[0];
+      return {
+        id: row.id,
+        score: row.score / 10,
+        roastContent: row.roastContent,
+        roastMode: row.roastMode,
+        code: row.code,
+        language: row.language,
+        createdAt: row.createdAt,
+      };
+    }),
 });

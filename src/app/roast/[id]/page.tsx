@@ -2,8 +2,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CodeBlock } from "@/components/ui/code-block";
-import { DiffLine } from "@/components/ui/diff-line";
 import { ScoreRing } from "@/components/ui/score-ring";
+import { trpcCaller } from "@/lib/trpc/server";
 
 interface RoastResultPageProps {
   params: Promise<{
@@ -11,62 +11,35 @@ interface RoastResultPageProps {
   }>;
 }
 
-const MOCK_ROAST_DATA = {
-  id: "123e4567-e89b-12d3-a456-426614174000",
-  score: "3.5",
-  verdict: "needs_serious_help",
-  roastTitle:
-    '"this code looks like it was written during a power outage... in 2005."',
-  language: "javascript",
-  lines: 16,
-  code: `function calculateTotal(items) {
-  var total = 0;
-  for (var i = 0; i < items.length; i++) {
-    total = total + items[i].price;
-  }
-  if (total > 100) {
-    console.log("discount applied");
-    total = total * 0.9;
-  }
-  // TODO: handle tax calculation
-  // TODO: handle currency conversion
-  return total;
-}`,
-  issues: [
-    {
+function getVerdict(score: number): string {
+  if (score >= 8) return "decent_code";
+  if (score >= 6) return "needs_work";
+  if (score >= 4) return "needs_improvement";
+  return "needs_serious_help";
+}
+
+function generateIssues(roastContent: string, score: number) {
+  const issues = [];
+
+  if (score < 5) {
+    issues.push({
       severity: "critical" as const,
-      title: "using var instead of const/let",
-      description:
-        "var is function-scoped and leads to hoisting bugs. use const by default, let when reassignment is needed.",
-    },
-    {
-      severity: "warning" as const,
-      title: "imperative loop pattern",
-      description:
-        "for loops are verbose and error-prone. use .reduce() or .map() for cleaner, functional transformations.",
-    },
-    {
-      severity: "good" as const,
-      title: "clear naming conventions",
-      description:
-        "calculateTotal and items are descriptive, self-documenting names that communicate intent without comments.",
-    },
-    {
-      severity: "good" as const,
-      title: "single responsibility",
-      description:
-        "the function does one thing well — calculates a total. no side effects, no mixed concerns, no hidden complexity.",
-    },
-  ],
-  suggestedFix: `function calculateTotal(items) {
--   var total = 0;
--   for (var i = 0; i < items.length; i++) {
--     total = total + items[i].price;
--   }
--   return total;
-+   return items.reduce((sum, item) => sum + item.price, 0);
-}`,
-};
+      title: "overall_quality",
+      description: roastContent,
+    });
+  }
+
+  issues.push({
+    severity: score >= 7 ? ("good" as const) : ("warning" as const),
+    title: "code_style",
+    description:
+      score >= 7
+        ? "Your code follows decent practices. Keep it up!"
+        : "Consider improving your code structure and readability.",
+  });
+
+  return issues;
+}
 
 export async function generateMetadata() {
   return {
@@ -78,32 +51,63 @@ export async function generateMetadata() {
 export default async function RoastResultPage({
   params,
 }: RoastResultPageProps) {
-  const { id: _id } = await params;
-  const data = MOCK_ROAST_DATA;
+  const { id } = await params;
+
+  let roast: Awaited<
+    ReturnType<typeof trpcCaller.metrics.getRoastById>
+  > | null = null;
+  try {
+    roast = await trpcCaller.metrics.getRoastById({ id });
+  } catch {
+    return (
+      <div className="flex w-full flex-col items-center justify-center gap-4 pb-16 pt-10">
+        <h1 className="font-jetbrains text-[20px] text-accent-red">
+          roast_not_found
+        </h1>
+        <p className="font-ibm-plex-mono text-[14px] text-text-secondary">
+          this roast doesn&apos;t exist or was deleted
+        </p>
+      </div>
+    );
+  }
+
+  const verdict = getVerdict(roast.score);
+  const issues = generateIssues(roast.roastContent, roast.score);
+  const lines = roast.code.split("\n").length;
 
   return (
     <div className="flex w-full flex-col gap-10 pb-16 pt-10">
       <div className="flex flex-col gap-12 px-20">
         <div className="flex items-start gap-12">
-          <ScoreRing score={parseFloat(data.score)} />
+          <ScoreRing score={roast.score} />
 
           <div className="flex flex-col items-start gap-4">
-            <Badge variant="needs_serious_help">verdict: {data.verdict}</Badge>
+            <Badge
+              variant={
+                verdict as
+                  | "needs_serious_help"
+                  | "needs_improvement"
+                  | "needs_work"
+                  | "decent_code"
+              }
+            >
+              verdict: {verdict}
+            </Badge>
             <h1 className="max-w-[600px] font-ibm-plex-mono text-[20px] leading-[1.5] text-text-primary">
-              {data.roastTitle}
+              {roast.roastContent}
             </h1>
             <div className="flex items-center gap-4">
               <span className="font-jetbrains text-[12px] text-text-tertiary">
-                lang: {data.language}
+                lang: {roast.language}
               </span>
               <span className="font-jetbrains text-[12px] text-text-tertiary">
                 ·
               </span>
               <span className="font-jetbrains text-[12px] text-text-tertiary">
-                {data.lines} lines
+                {lines} lines
               </span>
             </div>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" disabled>
               <span>$</span>
               <span>share_roast</span>
             </Button>
@@ -120,7 +124,7 @@ export default async function RoastResultPage({
             </span>
           </div>
           <CodeBlock
-            code={data.code}
+            code={roast.code}
             showLineNumbers={true}
             showHeader={false}
             className="rounded-none border border-border"
@@ -137,7 +141,7 @@ export default async function RoastResultPage({
             </span>
           </div>
           <div className="grid grid-cols-2 gap-5">
-            {data.issues.map((issue) => (
+            {issues.map((issue) => (
               <Card
                 key={issue.title}
                 status={issue.severity}
@@ -151,46 +155,6 @@ export default async function RoastResultPage({
                 </span>
               </Card>
             ))}
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-6">
-          <div className="flex items-center gap-2">
-            <span className="font-jetbrains text-[14px] font-[700] text-accent-green">
-              {"//"}
-            </span>
-            <span className="font-jetbrains text-[14px] font-[700] text-text-primary">
-              suggested_fix
-            </span>
-          </div>
-          <div className="flex flex-col rounded-none border border-border bg-input">
-            <div className="flex h-10 items-center gap-2 border-b border-border px-4">
-              <span className="font-jetbrains text-[12px] font-[500] text-text-secondary">
-                your_code.ts → improved_code.ts
-              </span>
-            </div>
-            <DiffLine variant="context">
-              function calculateTotal(items) {"{"}
-            </DiffLine>
-            <DiffLine variant="removed" prefix="-">
-              var total = 0;
-            </DiffLine>
-            <DiffLine variant="removed" prefix="-">
-              for (var i = 0; i &lt; items.length; i++) {"{"}
-            </DiffLine>
-            <DiffLine variant="removed" prefix="-">
-              total = total + items[i].price;
-            </DiffLine>
-            <DiffLine variant="removed" prefix="-">
-              {"}"}
-            </DiffLine>
-            <DiffLine variant="removed" prefix="-">
-              return total;
-            </DiffLine>
-            <DiffLine variant="added" prefix="+">
-              return items.reduce((sum, item) =&gt; sum + item.price, 0);
-            </DiffLine>
-            <DiffLine variant="context">{"}"}</DiffLine>
           </div>
         </div>
       </div>
