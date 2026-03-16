@@ -1,13 +1,11 @@
-import { Suspense } from "react";
-import { LeaderboardServer } from "@/components/leaderboard-server";
-import { LeaderboardSkeleton } from "@/components/leaderboard-skeleton";
+import { RoastFormServer } from "@/components/roast-form-server";
 
 export const metadata = {
-  title: "Shame Leaderboard | devroast",
-  description: "The most roasted code on the internet",
+  title: "Roast Your Code | devroast",
+  description: "Submit your code and get brutally roasted",
 };
 
-export default function LeaderboardPage() {
+export default function RoastPage() {
   return (
     <div className="flex w-full flex-col gap-10 pb-16 pt-10">
       <div className="flex flex-col gap-4">
@@ -16,17 +14,15 @@ export default function LeaderboardPage() {
             {">"}
           </span>
           <h1 className="font-jetbrains text-[28px] font-[700] text-text-primary">
-            shame_leaderboard
+            new_roast
           </h1>
         </div>
         <p className="font-ibm-plex-mono text-[14px] text-text-secondary">
-          {"//"} the most roasted code on the internet
+          {"//"} submit your code for analysis
         </p>
       </div>
 
-      <Suspense fallback={<LeaderboardSkeleton />}>
-        <LeaderboardServer />
-      </Suspense>
+      <RoastFormServer />
     </div>
   );
 }

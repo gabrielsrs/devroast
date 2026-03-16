@@ -52,6 +52,36 @@ export { Component, componentVariants };
 4. Use `tailwind-variants` for variants
 5. Use `cn()` from `@/lib/utils` for className merging
 
+## Server/Client Component Split Pattern
+
+When a page needs both server-side data fetching and client-side interactivity, split into:
+
+- `page.tsx` - Server Component that imports and renders client component
+- `{component}-client.tsx` - Client Component with `"use client"` directive
+
+```typescript
+// src/app/page.tsx (Server Component)
+import { HomeClient } from "@/components/home-client";
+
+export default function Home() {
+  return <HomeClient />;
+}
+```
+
+```typescript
+// src/components/home-client.tsx (Client Component)
+"use client";
+
+import { useState } from "react";
+// Client-side logic, hooks, interactivity here
+
+export function HomeClient() {
+  const [state, setState] = useState("");
+  // ...
+  return <div>...</div>;
+}
+```
+
 ## Color System
 
 Colors defined in `src/app/globals.css` @theme block:
@@ -78,3 +108,11 @@ npx biome format # Format code
 npx biome lint   # Lint code
 npx tsc --noEmit # Type check
 ```
+
+# Additional Patterns
+
+See the following documents for specific patterns:
+
+- [UI Components](src/components/ui/AGENTS.md) - Component creation pattern
+- [tRPC](src/lib/trpc/AGENTS.md) - Backend API layer pattern
+- [Metrics](src/components/metrics/AGENTS.md) - Metrics display pattern

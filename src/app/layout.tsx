@@ -44,7 +44,7 @@ export default function RootLayout({
             leaderboard
           </Link>
         </nav>
-        <main className="mx-auto max-w-[1440px] px-10">
+        <main className="flex justify-center mx-auto max-w-[1440px]">
           <TRPCReactProvider>{children}</TRPCReactProvider>
         </main>
       </body>
