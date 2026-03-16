@@ -1,4 +1,6 @@
 export function LeaderboardSkeleton() {
+  const skeletonItems = Array.from({ length: 20 }, (_, i) => `skeleton-${i}`);
+
   return (
     <div className="flex flex-col gap-5">
       <div className="flex items-center gap-2">
@@ -8,9 +10,9 @@ export function LeaderboardSkeleton() {
       </div>
 
       <div className="flex flex-col gap-0 rounded-none border border-border">
-        {[...Array(20)].map((_, i) => (
+        {skeletonItems.map((id) => (
           <div
-            key={i}
+            key={id}
             className="flex items-center gap-6 border-b border-border px-5 py-4 last:border-b-0"
           >
             <div className="w-10 h-4 animate-pulse rounded bg-border" />
