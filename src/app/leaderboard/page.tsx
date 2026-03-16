@@ -2,9 +2,6 @@ import { Suspense } from "react";
 import { LeaderboardServer } from "@/components/leaderboard-server";
 import { LeaderboardSkeleton } from "@/components/leaderboard-skeleton";
 
-const TOTAL_SUBMISSIONS = 2847;
-const AVG_SCORE = "4.2";
-
 export const metadata = {
   title: "Shame Leaderboard | devroast",
   description: "The most roasted code on the internet",
@@ -25,17 +22,6 @@ export default function LeaderboardPage() {
         <p className="font-ibm-plex-mono text-[14px] text-text-secondary">
           {"//"} the most roasted code on the internet
         </p>
-        <div className="flex items-center gap-2">
-          <span className="font-ibm-plex-mono text-[12px] text-text-tertiary">
-            {TOTAL_SUBMISSIONS.toLocaleString()} submissions
-          </span>
-          <span className="font-ibm-plex-mono text-[12px] text-text-tertiary">
-            ·
-          </span>
-          <span className="font-ibm-plex-mono text-[12px] text-text-tertiary">
-            avg score: {AVG_SCORE}/10
-          </span>
-        </div>
       </div>
 
       <Suspense fallback={<LeaderboardSkeleton />}>
