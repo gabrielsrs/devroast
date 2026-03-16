@@ -62,6 +62,7 @@ export const metricsRouter = router({
       code: row.code,
       codePreview: row.code.slice(0, 50) + (row.code.length > 50 ? "..." : ""),
       language: row.language,
+      lineCount: row.code.split("\n").length,
     }));
   }),
 });
