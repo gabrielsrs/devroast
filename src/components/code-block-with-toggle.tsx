@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { CodeBlock } from "@/components/ui/code-block";
 
 interface CodeBlockWithToggleProps {
@@ -13,6 +13,7 @@ export function CodeBlockWithToggle({
   defaultLines = 5,
 }: CodeBlockWithToggleProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const lines = code.split("\n");
   const totalLines = lines.length;
   const hasMoreThanDefault = totalLines > defaultLines;
@@ -22,8 +23,32 @@ export function CodeBlockWithToggle({
     : lines.slice(0, defaultLines).join("\n");
   const hiddenLines = totalLines - defaultLines;
 
+  const scrollToElement = useCallback(() => {
+    if (!containerRef.current) return;
+
+    const container = containerRef.current;
+    const rect = container.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+
+    if (rect.height > viewportHeight) {
+      container.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      container.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, []);
+
+  const handleToggle = useCallback(() => {
+    if (!isExpanded) {
+      setIsExpanded(true);
+      setTimeout(scrollToElement, 150);
+    } else {
+      scrollToElement();
+      setIsExpanded(false);
+    }
+  }, [isExpanded, scrollToElement]);
+
   return (
-    <div className="flex flex-col">
+    <div ref={containerRef} className="flex flex-col">
       <CodeBlock
         code={displayCode}
         showLineNumbers={true}
@@ -33,7 +58,7 @@ export function CodeBlockWithToggle({
       {hasMoreThanDefault && (
         <button
           type="button"
-          onClick={() => setIsExpanded(!isExpanded)}
+          onClick={handleToggle}
           className="flex w-full items-center justify-center border-t border-border bg-bg-surface px-4 py-2 font-jetbrains text-[12px] text-text-tertiary hover:bg-border/50"
         >
           {isExpanded ? "Show less" : `Show more (+${hiddenLines} lines)`}

@@ -47,18 +47,28 @@ export function LeaderboardClient({
               key={entry.id}
               className="flex flex-col gap-0 rounded-none border border-border"
             >
-              <div className="flex items-center justify-between border-b border-border bg-bg-surface px-5 py-4">
+              <div className="flex items-center justify-between border-b border-border bg-bg-surface px-5 py-3">
                 <div className="flex items-center gap-4">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent-red/20 font-jetbrains text-[14px] font-[700] text-accent-red">
-                    {entry.rank}
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-jetbrains text-[12px] text-text-tertiary">
+                      #
+                    </span>
+                    <span className="font-jetbrains text-[14px] font-[700] text-accent-amber">
+                      {entry.rank.replace("#", "")}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-jetbrains text-[12px] text-text-tertiary">
+                      score
+                    </span>
+                    <span className="font-jetbrains text-[14px] font-[700] text-accent-red">
+                      {entry.score}
+                    </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="font-jetbrains text-[12px] text-text-tertiary">
+                <div className="flex items-center gap-4">
+                  <span className="font-jetbrains text-[12px] text-text-secondary">
                     {entry.language ?? "other"}
-                  </span>
-                  <span className="font-jetbrains text-[14px] font-[700] text-accent-red">
-                    {entry.score}/10
                   </span>
                   <span className="font-jetbrains text-[12px] text-text-tertiary">
                     {entry.lineCount} lines

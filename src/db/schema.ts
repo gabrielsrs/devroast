@@ -46,6 +46,7 @@ export const roasts = pgTable("roasts", {
   id: uuid("id").defaultRandom().primaryKey(),
   submissionId: uuid("submissionId").notNull(),
   roastContent: text("roastContent").notNull(),
+  suggestedFix: text("suggestedFix"),
   score: integer("score").notNull(),
   roastMode: roastModeEnum("roastMode").default("sarcastic"),
   createdAt: timestamp("createdAt", { withTimezone: true, mode: "date" })

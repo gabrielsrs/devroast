@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import { submitRoastAction } from "@/components/roast-form-server";
 import { Button } from "@/components/ui/button";
 import { CodeEditor } from "@/components/ui/code-editor";
 import { Toggle } from "@/components/ui/toggle";
@@ -15,8 +17,23 @@ const SAMPLE_CODE = `function calculateTotal(items) {
 
 export function HomeClient() {
   const [code, setCode] = useState("");
+  const [language, setLanguage] = useState("javascript");
   const [roastMode, setRoastMode] = useState(false);
   const [isOverLimit, setIsOverLimit] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+
+  const handleSubmit = () => {
+    const formData = new FormData();
+    formData.set("code", code);
+    formData.set("language", language);
+    formData.set("roastMode", roastMode ? "helpful" : "sarcastic");
+
+    startTransition(async () => {
+      await submitRoastAction(formData);
+      router.refresh();
+    });
+  };
 
   return (
     <div className="flex w-full max-w-[960px] flex-col items-center gap-8 py-6">
@@ -36,6 +53,7 @@ export function HomeClient() {
       <CodeEditor
         value={code}
         onChange={setCode}
+        onLanguageChange={setLanguage}
         onLimitChange={setIsOverLimit}
         placeholder={SAMPLE_CODE}
         className="w-[780px] max-w-full"
@@ -47,10 +65,15 @@ export function HomeClient() {
             roast mode
           </Toggle>
           <span className="font-ibm-plex-mono text-[12px] text-text-tertiary">
-            {"//"} maximum sarcasm enabled
+            {"//"} {roastMode ? "maximum sarcasm enabled" : "helpful feedback"}
           </span>
         </div>
-        <Button disabled={!code.trim() || isOverLimit}>$ roast_my_code</Button>
+        <Button
+          disabled={!code.trim() || isOverLimit || isPending}
+          onClick={handleSubmit}
+        >
+          {isPending ? "$ roasting..." : "$ roast_my_code"}
+        </Button>
       </div>
     </div>
   );
