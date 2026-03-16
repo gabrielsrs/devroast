@@ -3,6 +3,10 @@
 **Date:** 2026-03-15  
 **Status:** Draft
 
+## Scope
+
+**IMPORTANT:** These changes apply ONLY to the leaderboard page (`/leaderboard`). The homepage (`/`) should remain unchanged with its current collapsible toggle behavior.
+
 ## Overview
 
 Improve the leaderboard page with new collapse behavior, visual enhancements, and layout changes.
@@ -71,6 +75,8 @@ New layout: rank | codePreview | language | score | lineCount
 
 ## Component Changes
 
+**Note:** These component changes apply only to leaderboard page components. The homepage components (`ShameLeaderboardClient`, `ShameLeaderboardServer`, `ShameLeaderboardSkeleton`) remain unchanged.
+
 ### LeaderboardClient (`src/components/leaderboard-client.tsx`)
 
 1. Remove `expandedId` state and `handleToggle` function
@@ -124,12 +130,14 @@ getFullLeaderboard: baseProcedure.query(async () => {
 
 ## Acceptance Criteria
 
-1. ✅ All rows expanded by default (no collapsible toggle between rows)
+**Note:** These criteria apply only to the leaderboard page. The homepage remains unchanged.
+
+1. ✅ All rows expanded by default (no collapsible toggle between rows) - leaderboard only
 2. ✅ Code blocks show 5 lines by default with "Show more" footer
 3. ✅ "Show more" footer hidden if code has ≤5 lines
 4. ✅ "Show more" footer reveals all lines, toggles to "Show less"
 5. ✅ Multiple code blocks can be expanded simultaneously
-6. ✅ Gap between rows (`gap-3`)
-7. ✅ Border on individual rows, not outer container
-8. ✅ Score displayed on right side
-9. ✅ Line count displayed on right side (after score)
+6. ✅ Gap between rows (`gap-3`) - leaderboard only
+7. ✅ Border on individual rows, not outer container - leaderboard only
+8. ✅ Score displayed on right side - leaderboard only
+9. ✅ Line count displayed on right side (after score) - leaderboard only
