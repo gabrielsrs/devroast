@@ -40,7 +40,7 @@ export function LeaderboardClient({
         </span>
       </div>
 
-      <div className="flex flex-col gap-0 rounded-none">
+      <div className="flex flex-col gap-6 rounded-none">
         {leaderboard.length > 0 ? (
           leaderboard.map((entry) => (
             <div
