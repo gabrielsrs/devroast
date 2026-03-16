@@ -41,4 +41,27 @@ export const metricsRouter = router({
       language: row.language,
     }));
   }),
+
+  getFullLeaderboard: baseProcedure.query(async () => {
+    const results = await db
+      .select({
+        id: roasts.id,
+        score: roasts.score,
+        code: submissions.code,
+        language: submissions.language,
+      })
+      .from(roasts)
+      .innerJoin(submissions, sql`${roasts.submissionId} = ${submissions.id}`)
+      .orderBy(roasts.score)
+      .limit(20);
+
+    return results.map((row, index) => ({
+      id: row.id,
+      rank: `#${index + 1}`,
+      score: (row.score / 10).toFixed(1),
+      code: row.code,
+      codePreview: row.code.slice(0, 50) + (row.code.length > 50 ? "..." : ""),
+      language: row.language,
+    }));
+  }),
 });
