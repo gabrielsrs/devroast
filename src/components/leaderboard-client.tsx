@@ -1,8 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { CodeBlock } from "@/components/ui/code-block";
-import { TableRow } from "@/components/ui/table-row";
+import { CodeBlockWithToggle } from "./code-block-with-toggle";
 
 interface LeaderboardEntry {
   id: string;
@@ -11,6 +9,7 @@ interface LeaderboardEntry {
   code: string;
   codePreview: string;
   language: string | null;
+  lineCount: number;
 }
 
 interface Stats {
@@ -27,24 +26,8 @@ export function LeaderboardClient({
   leaderboard,
   stats,
 }: LeaderboardClientProps) {
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const expandedRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (expandedId && expandedRef.current) {
-      expandedRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    }
-  }, [expandedId]);
-
-  const handleToggle = (id: string) => {
-    setExpandedId((prev) => (prev === id ? null : id));
-  };
-
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
         <span className="font-ibm-plex-mono text-[12px] text-text-tertiary">
           {stats.totalRoasts.toLocaleString()} submissions
@@ -57,34 +40,34 @@ export function LeaderboardClient({
         </span>
       </div>
 
-      <div className="flex flex-col gap-0 rounded-none border border-border">
+      <div className="flex flex-col gap-0 rounded-none">
         {leaderboard.length > 0 ? (
           leaderboard.map((entry) => (
-            <div key={entry.id}>
-              <button
-                type="button"
-                className="cursor-pointer w-full text-left"
-                onClick={() => handleToggle(entry.id)}
-              >
-                <TableRow
-                  rank={entry.rank}
-                  score={entry.score}
-                  codePreview={
-                    expandedId === entry.id ? entry.code : entry.codePreview
-                  }
-                  language={entry.language ?? "other"}
-                />
-              </button>
-              {expandedId === entry.id && (
-                <div ref={expandedRef} className="border-t border-border">
-                  <CodeBlock
-                    code={entry.code}
-                    showLineNumbers={true}
-                    showHeader={false}
-                    className="rounded-none border-none"
-                  />
+            <div
+              key={entry.id}
+              className="flex flex-col gap-0 rounded-none border border-border"
+            >
+              <div className="flex items-center justify-between border-b border-border bg-bg-surface px-5 py-4">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent-red/20 font-jetbrains text-[14px] font-[700] text-accent-red">
+                    {entry.rank}
+                  </div>
                 </div>
-              )}
+                <div className="flex items-center gap-3">
+                  <span className="font-jetbrains text-[12px] text-text-tertiary">
+                    {entry.language ?? "other"}
+                  </span>
+                  <span className="font-jetbrains text-[14px] font-[700] text-accent-red">
+                    {entry.score}/10
+                  </span>
+                  <span className="font-jetbrains text-[12px] text-text-tertiary">
+                    {entry.lineCount} lines
+                  </span>
+                </div>
+              </div>
+              <div className="bg-bg-surface">
+                <CodeBlockWithToggle code={entry.code} defaultLines={5} />
+              </div>
             </div>
           ))
         ) : (
