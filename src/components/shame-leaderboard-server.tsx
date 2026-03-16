@@ -1,8 +1,9 @@
 import { cacheLife } from "next/cache";
+import { cache } from "react";
 import { trpcCaller } from "@/lib/trpc/server";
 import { ShameLeaderboardClient } from "./shame-leaderboard-client";
 
-export async function ShameLeaderboardServer() {
+const getShameLeaderboardData = cache(async () => {
   "use cache";
   cacheLife({ stale: 3600 });
 
@@ -10,6 +11,12 @@ export async function ShameLeaderboardServer() {
     trpcCaller.metrics.getShameLeaderboard(),
     trpcCaller.metrics.getStats(),
   ]);
+
+  return { leaderboard, stats };
+});
+
+export async function ShameLeaderboardServer() {
+  const { leaderboard, stats } = await getShameLeaderboardData();
 
   return <ShameLeaderboardClient leaderboard={leaderboard} stats={stats} />;
 }
