@@ -31,7 +31,8 @@
     "shiki": "^4.0.2",
     "tailwind-merge": "^3.5.0",
     "tailwind-variants": "^3.2.2",
-    "zod": "^4.3.6"
+    "zod": "^4.3.6",
+    "@takumi-rs/image-response": "^0.73.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.7",
