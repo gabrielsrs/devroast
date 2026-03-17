@@ -1,5 +1,6 @@
+import { headers } from "next/headers";
+import { RoastResultShareButton } from "@/components/roast-result-share-button";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CodeBlock } from "@/components/ui/code-block";
 import { ScoreRing } from "@/components/ui/score-ring";
@@ -75,10 +76,32 @@ function generateIssues(roastContent: string, score: number) {
   return issues;
 }
 
-export async function generateMetadata() {
+export async function generateMetadata({ params }: RoastResultPageProps) {
+  const { id } = await params;
+  let roast: Awaited<
+    ReturnType<typeof trpcCaller.metrics.getRoastById>
+  > | null = null;
+
+  try {
+    roast = await trpcCaller.metrics.getRoastById({ id });
+  } catch {
+    return {
+      title: "Roast Not Found | devroast",
+      description: "This roast doesn't exist or was deleted",
+    };
+  }
+
   return {
-    title: "Roast Result | devroast",
-    description: "Your code got roasted",
+    title: `${roast.score.toFixed(1)}/10 - ${roast.roastContent.slice(0, 50)}${roast.roastContent.length > 50 ? "..." : ""} | devroast`,
+    description: roast.roastContent,
+    openGraph: {
+      title: `My code got roasted: ${roast.score.toFixed(1)}/10`,
+      description: roast.roastContent,
+      images: [`/api/og/${id}`],
+    },
+    twitter: {
+      card: "summary_large_image",
+    },
   };
 }
 
@@ -86,6 +109,11 @@ export default async function RoastResultPage({
   params,
 }: RoastResultPageProps) {
   const { id } = await params;
+  const headersList = await headers();
+  const serverUrl =
+    headersList.get("x-forwarded-host") || headersList.get("host");
+  const protocol = headersList.get("x-forwarded-proto") || "https";
+  const fullUrl = `${protocol}://${serverUrl}/roast/${id}`;
 
   let roast: Awaited<
     ReturnType<typeof trpcCaller.metrics.getRoastById>
@@ -141,10 +169,7 @@ export default async function RoastResultPage({
                 {lines} lines
               </span>
             </div>
-            <Button variant="outline" size="sm" disabled>
-              <span>$</span>
-              <span>share_roast</span>
-            </Button>
+            <RoastResultShareButton initialUrl={fullUrl} />
           </div>
         </div>
 
