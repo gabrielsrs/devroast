@@ -1,7 +1,6 @@
 # OpenGraph Image Generation for Roast Sharing
 
-**Date:** 2026-03-16  
-**Status:** Draft
+**Date:** 2026-03-16
 
 ## Overview
 
@@ -10,8 +9,8 @@ Generate OpenGraph (OG) images automatically when users share roast result links
 ## Goals
 
 - Enable rich link previews when sharing roast URLs on social platforms
-- Generate OG images on-demand when share button is clicked
-- Cache generated images to avoid recomputation
+- Generate OG images dynamically when metadata is requested
+- No storage required - images generated on-demand per roast ID
 
 ## Non-Goals
 
@@ -21,19 +20,7 @@ Generate OpenGraph (OG) images automatically when users share roast result links
 
 ## Design
 
-### 1. Data Model
-
-Add optional `ogImageUrl` field to `roasts` table for caching:
-
-```typescript
-// src/db/schema.ts
-export const roasts = pgTable("roasts", {
-  // ... existing fields
-  ogImageUrl: text("ogImageUrl"), // path to cached OG image
-});
-```
-
-### 2. OG Image Generation API
+### 1. OG Image Generation API
 
 Create `/app/api/og/[id]/route.ts`:
 
@@ -77,12 +64,13 @@ Create `/app/api/og/[id]/route.ts`:
     lang: {language} · {lines} lines
   </span>
   
-  {/* Roast quote */}
+  {/* Roast quote - truncate if too long */}
   <p style={{ 
     color: '#FAFAFA', fontSize: 22, textAlign: 'center',
-    fontFamily: 'IBM Plex Mono', lineHeight: 1.5
+    fontFamily: 'IBM Plex Mono', lineHeight: 1.5,
+    maxWidth: 1000, overflow: 'hidden', textOverflow: 'ellipsis'
   }}>
-    "{roastContent}"
+    "{roastContent.length > 200 ? roastContent.slice(0, 200) + '...' : roastContent}"
   </p>
 </div>
 ```
@@ -93,7 +81,7 @@ Create `/app/api/og/[id]/route.ts`:
 - `needs_improvement`: #F97316 (orange)
 - `needs_serious_help`: #EF4444 (red)
 
-### 3. Share Button Implementation
+### 2. Share Button Implementation
 
 In `roast/[id]/page.tsx`:
 
@@ -102,9 +90,6 @@ In `roast/[id]/page.tsx`:
 
 ```typescript
 const handleShare = async () => {
-  // Generate OG image
-  await fetch(`/api/og/${id}`);
-  
   // Copy URL to clipboard
   await navigator.clipboard.writeText(window.location.href);
   
@@ -112,7 +97,9 @@ const handleShare = async () => {
 };
 ```
 
-### 4. Metadata Integration
+**Note:** OG image is generated on-demand when social crawlers request the metadata, not when share button is clicked.
+
+### 3. Metadata Integration
 
 Update `generateMetadata` in `roast/[id]/page.tsx`:
 
@@ -135,7 +122,7 @@ export async function generateMetadata({ params }) {
 }
 ```
 
-### 5. Font Handling
+### 4. Font Handling
 
 - Use `@takumi-rs/image-response` built-in font support
 - Configure fonts in Takumi options
@@ -145,9 +132,9 @@ export async function generateMetadata({ params }) {
 
 1. User submits code → receives roast with score/verdict
 2. User clicks "share_roast" button
-3. System generates OG image (if not cached)
-4. URL copied to clipboard
-5. When shared link is opened by others, OG image appears in social previews
+3. URL copied to clipboard
+4. When shared link is opened by others or crawled by social bots, OG image is generated dynamically via `/api/og/[id]`
+5. Social platforms display OG image in link previews
 
 ## Error Handling
 
@@ -160,7 +147,7 @@ export async function generateMetadata({ params }) {
 ## Acceptance Criteria
 
 - [ ] Share button is enabled and functional
-- [ ] Clicking share generates OG image
+- [ ] Clicking share copies URL to clipboard; OG image generated when crawlers request metadata
 - [ ] OG image URL is copied to clipboard
 - [ ] Sharing link shows OG preview on social platforms
 - [ ] Metadata includes correct `og:image` tag
